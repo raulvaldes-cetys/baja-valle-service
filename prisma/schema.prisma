@@ -9,7 +9,28 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
+
+model Product {
+  id             BigInt   @id @default(autoincrement())
+  name           String
+  description    String   @db.Text
+  features       String[]
+  specifications String   @db.Text
+  price          Decimal  @db.Decimal(12, 2)
+  categoryId     Int
+  category       Category @relation(fields: [categoryId], references: [id])
+
+  @@map("products")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  color    String?
+  products Product[]
+
+  @@map("categories")
+}
+
