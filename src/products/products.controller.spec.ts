@@ -69,7 +69,9 @@ describe('ProductsController', () => {
       const result = await controller.create(mockCreateProductDto);
 
       expect(result).toEqual(mockProduct);
-      expect(mockProductsService.create).toHaveBeenCalledWith(mockCreateProductDto);
+      expect(mockProductsService.create).toHaveBeenCalledWith(
+        mockCreateProductDto,
+      );
     });
   });
 
@@ -90,9 +92,9 @@ describe('ProductsController', () => {
     it('should propagate NotFoundException when product does not exist', async () => {
       mockProductsService.update.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.update('99', mockUpdateProductDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.update('99', mockUpdateProductDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

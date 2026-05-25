@@ -75,7 +75,9 @@ describe('ProductsService', () => {
     it('should throw NotFoundException when product does not exist', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne(BigInt(99))).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(BigInt(99))).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -119,9 +121,9 @@ describe('ProductsService', () => {
     it('should throw NotFoundException when updating a non-existent product', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(null);
 
-      await expect(service.update(BigInt(99), mockUpdateProductDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update(BigInt(99), mockUpdateProductDto),
+      ).rejects.toThrow(NotFoundException);
       expect(mockPrismaService.product.update).not.toHaveBeenCalled();
     });
   });
@@ -142,7 +144,9 @@ describe('ProductsService', () => {
     it('should throw NotFoundException when deleting a non-existent product', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove(BigInt(99))).rejects.toThrow(NotFoundException);
+      await expect(service.remove(BigInt(99))).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrismaService.product.delete).not.toHaveBeenCalled();
     });
   });
