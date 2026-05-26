@@ -5,6 +5,7 @@ export const mockCategory = {
   id: 1,
   name: 'Vinos',
   color: '#722F37',
+  iconUrl: 'https://example.com/icons/vinos.svg',
 };
 
 export const mockProduct = {
@@ -20,6 +21,7 @@ export const mockProduct = {
   specifications:
     'Uva: Cabernet Sauvignon | Añada: 2021 | Alcohol: 14% | Región: Valle de Guadalupe',
   price: 450.0,
+  imageUrl: 'https://example.com/images/vino-tinto-gran-reserva.png',
   categoryId: 1,
   category: mockCategory,
 };
@@ -38,6 +40,7 @@ export const mockProductList = [
     specifications:
       'Uva: Chardonnay | Añada: 2022 | Alcohol: 12.5% | Región: Valle de Calafia',
     price: 320.0,
+    imageUrl: 'https://example.com/images/vino-blanco-chardonnay.png',
     categoryId: 1,
     category: mockCategory,
   },

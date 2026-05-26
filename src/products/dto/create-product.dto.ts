@@ -3,8 +3,10 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
+  IsUrl,
   Min,
 } from 'class-validator';
 
@@ -28,6 +30,10 @@ export class CreateProductDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   price: number;
+
+  @IsOptional()
+  @IsUrl()
+  imageUrl?: string;
 
   @IsInt()
   @Min(1)

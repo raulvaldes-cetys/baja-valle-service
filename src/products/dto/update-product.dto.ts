@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUrl,
   Min,
 } from 'class-validator';
 
@@ -30,6 +31,10 @@ export class UpdateProductDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   price?: number;
+
+  @IsOptional()
+  @IsUrl()
+  imageUrl?: string;
 
   @IsOptional()
   @IsInt()
