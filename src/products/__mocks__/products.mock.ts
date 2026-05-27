@@ -26,6 +26,21 @@ export const mockProduct = {
   category: mockCategory,
 };
 
+export const mockProductSummaryList = [
+  {
+    id: BigInt(1),
+    name: 'Vino Tinto Gran Reserva',
+    price: 450.0,
+    imageUrl: 'https://example.com/images/vino-tinto-gran-reserva.png',
+  },
+  {
+    id: BigInt(2),
+    name: 'Vino Blanco Chardonnay',
+    price: 320.0,
+    imageUrl: 'https://example.com/images/vino-blanco-chardonnay.png',
+  },
+];
+
 export const mockProductList = [
   mockProduct,
   {

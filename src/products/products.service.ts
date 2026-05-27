@@ -9,7 +9,7 @@ export class ProductsService {
 
   findAll() {
     return this.prisma.product.findMany({
-      include: { category: true },
+      select: { id: true, name: true, price: true, imageUrl: true },
     });
   }
 

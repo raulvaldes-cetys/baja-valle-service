@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   mockCreateProductDto,
   mockProduct,
-  mockProductList,
+  mockProductSummaryList,
   mockUpdateProductDto,
 } from './__mocks__/products.mock';
 import { ProductsController } from './products.controller';
@@ -35,12 +35,12 @@ describe('ProductsController', () => {
   });
 
   describe('findAll', () => {
-    it('should return the list of products', async () => {
-      mockProductsService.findAll.mockResolvedValue(mockProductList);
+    it('should return the summary list of products', async () => {
+      mockProductsService.findAll.mockResolvedValue(mockProductSummaryList);
 
       const result = await controller.findAll();
 
-      expect(result).toEqual(mockProductList);
+      expect(result).toEqual(mockProductSummaryList);
       expect(mockProductsService.findAll).toHaveBeenCalledTimes(1);
     });
   });

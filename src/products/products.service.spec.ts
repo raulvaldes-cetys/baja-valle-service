@@ -5,6 +5,7 @@ import {
   mockCreateProductDto,
   mockProduct,
   mockProductList,
+  mockProductSummaryList,
   mockUpdateProductDto,
 } from './__mocks__/products.mock';
 import { ProductsService } from './products.service';
@@ -39,14 +40,16 @@ describe('ProductsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all products with their categories', async () => {
-      mockPrismaService.product.findMany.mockResolvedValue(mockProductList);
+    it('should return all products with only id, name, price and imageUrl', async () => {
+      mockPrismaService.product.findMany.mockResolvedValue(
+        mockProductSummaryList,
+      );
 
       const result = await service.findAll();
 
-      expect(result).toEqual(mockProductList);
+      expect(result).toEqual(mockProductSummaryList);
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
-        include: { category: true },
+        select: { id: true, name: true, price: true, imageUrl: true },
       });
     });
 
