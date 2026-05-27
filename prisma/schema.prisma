@@ -17,7 +17,7 @@ model Product {
   name           String
   description    String   @db.Text
   features       String[]
-  specifications String   @db.Text
+  specifications String?  @db.Text
   price          Decimal  @db.Decimal(12, 2)
   imageUrl       String?
   categoryId     Int
