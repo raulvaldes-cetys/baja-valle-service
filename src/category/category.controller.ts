@@ -1,18 +1,10 @@
-import { Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put, } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateProductDto } from 'src/products/dto/update-product.dto';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { CategoryService } from './category.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller('categories')
 export class CategoryController {
-
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
@@ -21,8 +13,8 @@ export class CategoryController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.categoryService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.categoryService.findOne(+id);
   }
 
   @Post()
@@ -30,14 +22,13 @@ export class CategoryController {
     return this.categoryService.create(dto);
   }
 
-  @Put()
-  update(@Param('id') id: number, @Body() dto: UpdateCategoryDto) {
-    return this.categoryService.update(id, dto);
+  @Put(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+    return this.categoryService.update(+id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.categoryService.remove(id); //revisar tipo de dato para id
+  remove(@Param('id') id: string) {
+    return this.categoryService.remove(+id);
   }
-
 }
