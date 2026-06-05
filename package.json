@@ -78,7 +78,13 @@
       ".*/generated/prisma/client$": "<rootDir>/__mocks__/prismaGenerated.ts"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/__mocks__/**",
+      "!**/*.spec.ts",
+      "!**/*.module.ts",
+      "!**/*.dto.ts",
+      "!**/generated/**",
+      "!main.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
