@@ -31,7 +31,9 @@ describe('MailController', () => {
 
       await controller.sendContact(mockContactMailDto);
 
-      expect(mockMailService.sendContact).toHaveBeenCalledWith(mockContactMailDto);
+      expect(mockMailService.sendContact).toHaveBeenCalledWith(
+        mockContactMailDto,
+      );
       expect(mockMailService.sendContact).toHaveBeenCalledTimes(1);
     });
   });

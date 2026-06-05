@@ -49,7 +49,13 @@ describe('ProductsService', () => {
 
       expect(result).toEqual(mockProductSummaryList);
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
-        select: { id: true, name: true, price: true, imageUrl: true, categoryId: true },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          imageUrl: true,
+          categoryId: true,
+        },
       });
     });
 

@@ -19,22 +19,21 @@ export class CategoryService {
       include: { products: true },
     });
     if (!category) {
-      throw new NotFoundException(`Categoría con id ${id} no encontrada` );
+      throw new NotFoundException(`Categoría con id ${id} no encontrada`);
     }
     return category;
   }
 
-  create(dto: CreateCategoryDto){
+  create(dto: CreateCategoryDto) {
     return this.prisma.category.create({
       data: {
         name: dto.name,
         color: dto.color,
       },
-
     });
   }
 
-  async update(id: number, dto: UpdateCategoryDto){
+  async update(id: number, dto: UpdateCategoryDto) {
     await this.findOne(id);
     return this.prisma.category.update({
       where: { id },
@@ -42,10 +41,8 @@ export class CategoryService {
     });
   }
 
-  async remove(id: number){
+  async remove(id: number) {
     await this.findOne(id);
-    return this.prisma.category.delete({ where: { id }});
+    return this.prisma.category.delete({ where: { id } });
   }
-
-
 }

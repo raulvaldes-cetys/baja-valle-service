@@ -25,7 +25,9 @@ export class MailService {
         html: this.buildContactHtml(dto),
       });
     } catch (error) {
-      throw new InternalServerErrorException('No se pudo enviar el correo de contacto');
+      throw new InternalServerErrorException(
+        'No se pudo enviar el correo de contacto',
+      );
     }
   }
 
@@ -39,7 +41,9 @@ export class MailService {
         html: this.buildCartHtml(dto),
       });
     } catch (error) {
-      throw new InternalServerErrorException('No se pudo enviar el correo de cotización');
+      throw new InternalServerErrorException(
+        'No se pudo enviar el correo de cotización',
+      );
     }
   }
 

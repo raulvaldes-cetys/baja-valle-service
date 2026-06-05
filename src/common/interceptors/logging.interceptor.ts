@@ -30,9 +30,7 @@ export class LoggingInterceptor implements NestInterceptor {
         const ms = Date.now() - start;
         const status = err?.status ?? err?.statusCode ?? 500;
         const reason = err?.message ?? 'Error desconocido';
-        this.logger.error(
-          `${method} ${url} - ${status} (${ms}ms) | ${reason}`,
-        );
+        this.logger.error(`${method} ${url} - ${status} (${ms}ms) | ${reason}`);
         return throwError(() => err);
       }),
     );

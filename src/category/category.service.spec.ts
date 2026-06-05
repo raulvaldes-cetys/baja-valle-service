@@ -113,9 +113,9 @@ describe('CategoryService', () => {
     it('should throw NotFoundException when updating a non-existent category', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.update(99, mockUpdateCategoryDto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update(99, mockUpdateCategoryDto)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrismaService.category.update).not.toHaveBeenCalled();
     });
   });
