@@ -42,7 +42,7 @@ describe('MailService', () => {
         expect.objectContaining({
           to: process.env.MAIL_TO,
           replyTo: mockContactMailDto.correo,
-          subject: expect.stringContaining(mockContactMailDto.nombre),
+          subject: expect.stringContaining(mockContactMailDto.nombre) as string,
         }),
       );
     });
@@ -67,7 +67,7 @@ describe('MailService', () => {
         expect.objectContaining({
           to: process.env.MAIL_TO,
           replyTo: mockCartMailDto.correo,
-          subject: expect.stringContaining(mockCartMailDto.nombre),
+          subject: expect.stringContaining(mockCartMailDto.nombre) as string,
         }),
       );
     });

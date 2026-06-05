@@ -6,7 +6,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 // BigInt no es serializable por JSON.stringify por defecto.
 // Esto lo convierte a string automáticamente en todas las respuestas HTTP.
-(BigInt.prototype as any).toJSON = function () {
+(BigInt.prototype as { toJSON?: () => string }).toJSON = function (
+  this: bigint,
+) {
   return this.toString();
 };
 
@@ -31,4 +33,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

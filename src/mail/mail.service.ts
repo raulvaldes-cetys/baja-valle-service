@@ -24,7 +24,7 @@ export class MailService {
         subject: `Nuevo mensaje de contacto — ${dto.nombre} ${dto.apellido}`,
         html: this.buildContactHtml(dto),
       });
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'No se pudo enviar el correo de contacto',
       );
@@ -40,7 +40,7 @@ export class MailService {
         subject: `Nueva solicitud de cotización — ${dto.nombre} ${dto.apellido}`,
         html: this.buildCartHtml(dto),
       });
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'No se pudo enviar el correo de cotización',
       );

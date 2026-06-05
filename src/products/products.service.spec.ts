@@ -4,7 +4,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   mockCreateProductDto,
   mockProduct,
-  mockProductList,
   mockProductSummaryList,
   mockUpdateProductDto,
 } from './__mocks__/products.mock';
