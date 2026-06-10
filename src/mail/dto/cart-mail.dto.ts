@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsPositive,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -15,6 +16,10 @@ export class CartItemDto {
 
   @IsNumber()
   cantidad: number;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  precio: number;
 }
 
 export class CartMailDto {
