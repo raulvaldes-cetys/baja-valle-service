@@ -4,25 +4,6 @@ import * as nodemailer from 'nodemailer';
 import { CartMailDto } from './dto/cart-mail.dto';
 import { ContactMailDto } from './dto/contact-mail.dto';
 
-const HEADER_FILL: Fill = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FF3F3F3F' },
-};
-
-const ACCENT_FILL: Fill = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FFF2EBD3' },
-};
-
-const THIN_BORDER: Partial<Borders> = {
-  top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
-  left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
-  bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
-  right: { style: 'thin', color: { argb: 'FFCCCCCC' } },
-};
-
 const CURRENCY_FORMAT = '"$"#,##0.00';
 
 @Injectable()
@@ -98,124 +79,225 @@ export class MailService {
     const workbook = new Workbook();
     const sheet = workbook.addWorksheet('Cotización');
 
+    const CREAM: Fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFF5EDD8' },
+    };
+    const DARK: Fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF3F3F3F' },
+    };
+    const WHITE: Fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFFFF' },
+    };
+    const BORDER: Partial<Borders> = {
+      top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+      left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+      bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+      right: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+    };
+
+    // A=margen izq, B=descripción, C=cantidad, D=precio, E=total, F=margen der
     sheet.columns = [
-      { width: 45 },
+      { width: 3 },
+      { width: 36 },
       { width: 12 },
-      { width: 16 },
-      { width: 16 },
+      { width: 14 },
+      { width: 14 },
+      { width: 3 },
     ];
 
-    sheet.mergeCells('A1:B2');
-    const company = sheet.getCell('A1');
-    company.value = 'BAJA VALLE\nTodo para viñedos';
-    company.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
-    company.alignment = { vertical: 'middle', wrapText: true };
-    company.fill = HEADER_FILL;
+    // Fondo crema dinámico: 17 (inicio items) + items reales + ~12 filas para totales/footer
+    const MIN_ITEM_ROWS = 7;
+    const fillRows = 17 + Math.max(dto.items.length, MIN_ITEM_ROWS) + 12;
+    for (let r = 1; r <= fillRows; r++) {
+      for (let c = 1; c <= 6; c++) {
+        sheet.getCell(r, c).fill = CREAM;
+      }
+    }
 
-    sheet.mergeCells('C1:D2');
-    const title = sheet.getCell('C1');
-    title.value = 'SOLICITUD DE COTIZACIÓN';
-    title.font = { bold: true, size: 16 };
-    title.alignment = { vertical: 'middle', horizontal: 'right' };
+    // --- ENCABEZADO ---
+    sheet.getRow(1).height = 25;
+    sheet.getRow(2).height = 26;
+    sheet.getRow(3).height = 22;
 
-    sheet.addRow([]);
+    // B1 con fondo oscuro (extiende visualmente el logo hacia arriba)
+    sheet.getCell('B1').fill = DARK;
 
-    const folioRow = sheet.addRow(['Folio', folio]);
-    folioRow.getCell(1).font = { bold: true };
-
-    const dateRow = sheet.addRow([
-      'Fecha',
-      new Date().toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-    ]);
-    dateRow.getCell(1).font = { bold: true };
-
-    sheet.addRow([]);
-
-    const clientHeaderRow = sheet.addRow(['Datos del cliente']);
-    sheet.mergeCells(`A${clientHeaderRow.number}:D${clientHeaderRow.number}`);
-    clientHeaderRow.getCell(1).font = {
+    const logoTop = sheet.getCell('B2');
+    logoTop.value = 'BAJA VALLE';
+    logoTop.font = {
+      name: 'Century Gothic',
       bold: true,
+      size: 20,
       color: { argb: 'FFFFFFFF' },
     };
-    clientHeaderRow.getCell(1).fill = HEADER_FILL;
+    logoTop.fill = DARK;
+    logoTop.alignment = { vertical: 'middle' };
 
-    const nameRow = sheet.addRow(['Nombre', `${dto.nombre} ${dto.apellido}`]);
-    nameRow.getCell(1).font = { bold: true };
-
-    const emailRow = sheet.addRow(['Correo', dto.correo]);
-    emailRow.getCell(1).font = { bold: true };
-
-    const locationRow = sheet.addRow(['Ubicación', dto.ubicacion]);
-    locationRow.getCell(1).font = { bold: true };
-
-    sheet.addRow([]);
-
-    const tableHeaderRow = sheet.addRow([
-      'Producto',
-      'Cantidad',
-      'Precio unitario',
-      'Importe',
-    ]);
-    tableHeaderRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = HEADER_FILL;
-      cell.alignment = { horizontal: 'center' };
-      cell.border = THIN_BORDER;
-    });
-
-    let subtotal = 0;
-    dto.items.forEach((item, index) => {
-      const amount = item.cantidad * item.precio;
-      subtotal += amount;
-
-      const row = sheet.addRow([
-        item.nombre,
-        item.cantidad,
-        item.precio,
-        amount,
-      ]);
-      row.getCell(2).alignment = { horizontal: 'center' };
-      row.getCell(3).numFmt = CURRENCY_FORMAT;
-      row.getCell(4).numFmt = CURRENCY_FORMAT;
-      row.eachCell((cell) => {
-        cell.border = THIN_BORDER;
-        if (index % 2 === 1) {
-          cell.fill = ACCENT_FILL;
-        }
-      });
-    });
-
-    sheet.addRow([]);
-
-    const subtotalRow = sheet.addRow(['', '', 'Subtotal', subtotal]);
-    subtotalRow.getCell(3).font = { bold: true };
-    subtotalRow.getCell(3).alignment = { horizontal: 'right' };
-    subtotalRow.getCell(4).numFmt = CURRENCY_FORMAT;
-
-    const totalRow = sheet.addRow(['', '', 'Total', subtotal]);
-    totalRow.eachCell((cell, colNumber) => {
-      if (colNumber < 3) return;
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = HEADER_FILL;
-    });
-    totalRow.getCell(3).alignment = { horizontal: 'right' };
-    totalRow.getCell(4).numFmt = CURRENCY_FORMAT;
-
-    sheet.addRow([]);
-
-    const noteRow = sheet.addRow([
-      'Cotización generada automáticamente. Los precios son de referencia y están sujetos a confirmación.',
-    ]);
-    sheet.mergeCells(`A${noteRow.number}:D${noteRow.number}`);
-    noteRow.getCell(1).font = {
-      italic: true,
-      size: 9,
-      color: { argb: 'FF888888' },
+    const logoBottom = sheet.getCell('B3');
+    logoBottom.value = 'TODO PARA VIÑEDOS';
+    logoBottom.font = {
+      name: 'Century Gothic',
+      size: 17,
+      color: { argb: 'FFFFFFFF' },
     };
+    logoBottom.fill = DARK;
+    logoBottom.alignment = { vertical: 'middle' };
+
+    const titleCell = sheet.getCell('E2');
+    titleCell.value = 'COTIZACIÓN';
+    titleCell.font = { name: 'Rockwell', bold: true, size: 25 };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'right' };
+
+    // --- DATOS DE CONTACTO Y COTIZACIÓN ---
+    const date = new Date().toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const ROCKWELL_BOLD_10 = { name: 'Rockwell', bold: true, size: 10 };
+
+    sheet.getCell('B5').value = 'AVE RUIZ 460 ZC';
+    sheet.getCell('B5').font = ROCKWELL_BOLD_10;
+    sheet.getCell('B6').value = 'ENSENADA BC MEXICO';
+    sheet.getCell('B6').font = ROCKWELL_BOLD_10;
+    sheet.getCell('B7').value = '331-280-8522';
+    sheet.getCell('B7').font = ROCKWELL_BOLD_10;
+
+    sheet.mergeCells('D5:E5');
+    sheet.mergeCells('D6:E6');
+    sheet.mergeCells('D7:E7');
+
+    const infoRows: [string, string][] = [
+      ['D5', `FECHA   ${date}`],
+      ['D6', `NUMERO   ${folio}`],
+      ['D7', `EMPRESA   ${dto.nombre} ${dto.apellido}`],
+    ];
+    infoRows.forEach(([addr, value]) => {
+      const cell = sheet.getCell(addr);
+      cell.value = value;
+      cell.font = ROCKWELL_BOLD_10;
+    });
+
+    // --- ENCABEZADO DE TABLA ---
+    sheet.getRow(16).height = 20;
+    const tableHeaders: [string, string, string][] = [
+      ['B', 'DESCRIPCIÓN', 'left'],
+      ['C', 'CANTIDAD', 'center'],
+      ['D', 'PRECIO', 'center'],
+      ['E', 'TOTAL', 'right'],
+    ];
+    tableHeaders.forEach(([col, label, align]) => {
+      const cell = sheet.getCell(`${col}16`);
+      cell.value = label;
+      cell.font = {
+        name: 'Century Gothic',
+        bold: true,
+        color: { argb: 'FFFFFFFF' },
+      };
+      cell.fill = DARK;
+      cell.alignment = {
+        horizontal: align as 'left' | 'center' | 'right',
+        vertical: 'middle',
+      };
+      cell.border = BORDER;
+    });
+
+    // --- ITEMS ---
+    const ROCKWELL_10 = { name: 'Rockwell', size: 10 };
+    let subtotal = 0;
+    let currentRow = 17;
+
+    dto.items.forEach((item, index) => {
+      const rowTotal = item.cantidad * item.precio;
+      subtotal += rowTotal;
+      const fill = index % 2 === 0 ? WHITE : CREAM;
+
+      sheet.getRow(currentRow).height = 18;
+      ['B', 'C', 'D', 'E'].forEach((col) => {
+        sheet.getCell(`${col}${currentRow}`).fill = fill;
+        sheet.getCell(`${col}${currentRow}`).border = BORDER;
+      });
+
+      sheet.getCell(`B${currentRow}`).value = item.nombre;
+      sheet.getCell(`B${currentRow}`).font = ROCKWELL_10;
+      sheet.getCell(`C${currentRow}`).value = item.cantidad;
+      sheet.getCell(`C${currentRow}`).font = ROCKWELL_10;
+      sheet.getCell(`C${currentRow}`).alignment = { horizontal: 'center' };
+      sheet.getCell(`D${currentRow}`).value = item.precio;
+      sheet.getCell(`D${currentRow}`).font = ROCKWELL_10;
+      sheet.getCell(`D${currentRow}`).numFmt = CURRENCY_FORMAT;
+      sheet.getCell(`D${currentRow}`).alignment = { horizontal: 'right' };
+      sheet.getCell(`E${currentRow}`).value = rowTotal;
+      sheet.getCell(`E${currentRow}`).font = ROCKWELL_10;
+      sheet.getCell(`E${currentRow}`).numFmt = CURRENCY_FORMAT;
+      sheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+
+      currentRow++;
+    });
+
+    // Filas vacías hasta un mínimo de 7 para mantener la estructura visual
+    for (let i = dto.items.length; i < MIN_ITEM_ROWS; i++) {
+      const fill = i % 2 === 0 ? WHITE : CREAM;
+      sheet.getRow(currentRow).height = 18;
+      ['B', 'C', 'D', 'E'].forEach((col) => {
+        sheet.getCell(`${col}${currentRow}`).fill = fill;
+        sheet.getCell(`${col}${currentRow}`).border = BORDER;
+      });
+      currentRow++;
+    }
+
+    currentRow++; // espacio antes de totales
+
+    // --- TOTALES ---
+    sheet.getCell(`D${currentRow}`).value = 'SUBTOTAL';
+    sheet.getCell(`D${currentRow}`).font = { name: 'Rockwell', bold: true };
+    sheet.getCell(`D${currentRow}`).alignment = { horizontal: 'right' };
+    sheet.getCell(`E${currentRow}`).value = subtotal;
+    sheet.getCell(`E${currentRow}`).font = { name: 'Rockwell', bold: true };
+    sheet.getCell(`E${currentRow}`).numFmt = CURRENCY_FORMAT;
+    sheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+    sheet.getCell(`E${currentRow}`).border = {
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+    };
+    currentRow++;
+
+    sheet.getCell(`D${currentRow}`).value = 'IVA';
+    sheet.getCell(`D${currentRow}`).font = { name: 'Rockwell', bold: true };
+    sheet.getCell(`D${currentRow}`).alignment = { horizontal: 'right' };
+    sheet.getCell(`E${currentRow}`).border = {
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+    };
+    currentRow += 2;
+
+    sheet.getRow(currentRow).height = 22;
+    ['D', 'E'].forEach((col) => {
+      const cell = sheet.getCell(`${col}${currentRow}`);
+      cell.fill = DARK;
+      cell.font = {
+        name: 'Century Gothic',
+        bold: true,
+        color: { argb: 'FFFFFFFF' },
+      };
+      cell.alignment = { horizontal: 'right', vertical: 'middle' };
+    });
+    sheet.getCell(`D${currentRow}`).value = 'TOTAL';
+    sheet.getCell(`E${currentRow}`).value = subtotal;
+    sheet.getCell(`E${currentRow}`).numFmt = CURRENCY_FORMAT;
+    currentRow += 4;
+
+    // --- FOOTER ---
+    sheet.mergeCells(`B${currentRow}:E${currentRow}`);
+    const footer = sheet.getCell(`B${currentRow}`);
+    footer.value = 'GRACIAS POR HACER NEGOCIO CON NOSOTROS!';
+    footer.font = { name: 'Rockwell', bold: true, size: 10 };
+    footer.alignment = { horizontal: 'center' };
 
     return Buffer.from(await workbook.xlsx.writeBuffer());
   }
