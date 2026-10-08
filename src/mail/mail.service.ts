@@ -6,7 +6,6 @@ import { CartMailDto } from './dto/cart-mail.dto';
 import { ContactMailDto } from './dto/contact-mail.dto';
 
 const CURRENCY_FORMAT = '"$"#,##0.00';
-// Remitente fijo: el nombre que escribe el usuario nunca va en el From (evita suplantación)
 const SENDER_NAME = 'Baja Valle App';
 
 @Injectable()
@@ -65,7 +64,6 @@ export class MailService {
   }
 
   private buildContactHtml(dto: ContactMailDto): string {
-    // Todo valor del usuario se escapa: evita inyectar links o formularios en el correo (phishing interno)
     const nombre = escapeHtml(`${dto.nombre} ${dto.apellido}`);
     const correo = escapeHtml(dto.correo);
     const mensaje = escapeHtml(dto.mensaje).replace(/\r?\n/g, '<br />');

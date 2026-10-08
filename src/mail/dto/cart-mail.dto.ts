@@ -26,7 +26,6 @@ export class CartItemDto {
   @Max(1000)
   cantidad: number;
 
-  // TODO(F4): el precio debe salir de la BD por productId, no del cliente (hallazgo H5)
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Max(1_000_000)

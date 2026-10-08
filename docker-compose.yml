@@ -1,4 +1,4 @@
-# Postgres local para desarrollo. No usar estas credenciales fuera de tu máquina.
+# Credenciales solo para desarrollo local
 services:
   db:
     image: postgres:17-alpine
