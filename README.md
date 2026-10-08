@@ -53,7 +53,14 @@ Todas las tablas tienen **RLS** activado con una política solo para `baja_valle
 
 Después de **cada** migración hay que correr `pnpm db:grants` (o usar `pnpm db:migrate`, que ya lo incluye).
 
-Para crear el rol de la app en una BD administrada (Supabase/Azure), ver `prisma/sql/create-app-role.sql`.
+Para una BD administrada (Supabase hoy, Azure después):
+
+1. Crear el rol de la app una vez: `prisma/sql/create-app-role.sql`, con una contraseña generada.
+2. `pnpm db:grants`.
+3. **Solo Supabase:** `prisma/sql/supabase-lockdown.sql`. Revoca todos los privilegios de `anon` y `authenticated`, incluido `TRUNCATE`, que RLS no controla.
+4. Usar el rol de la app en `DATABASE_URL`. En el pooler de Supabase el usuario lleva el ref del proyecto: `baja_valle_app.<project-ref>`.
+
+> Si la red bloquea Postgres (por ejemplo, el firewall de la escuela), los pasos 1–3 se pueden pegar en el SQL Editor de Supabase, que funciona por HTTPS.
 
 ### Políticas verificadas automáticamente
 
