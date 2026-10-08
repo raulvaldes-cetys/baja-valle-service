@@ -1,8 +1,9 @@
-import 'dotenv/config';
-import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { Env } from './config/env';
+import { configureApp } from './setup-app';
 
 // BigInt no es serializable por JSON.stringify por defecto.
 // Esto lo convierte a string automáticamente en todas las respuestas HTTP.
@@ -13,24 +14,15 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const config = app.get(ConfigService<Env, true>);
 
-  app.enableCors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+  configureApp(app, {
+    NODE_ENV: config.get('NODE_ENV', { infer: true }),
+    CORS_ORIGINS: config.get('CORS_ORIGINS', { infer: true }),
+    SWAGGER_ENABLED: config.get('SWAGGER_ENABLED', { infer: true }),
   });
 
-  app.useGlobalInterceptors(new LoggingInterceptor());
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(config.get('PORT', { infer: true }));
 }
 void bootstrap();

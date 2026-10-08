@@ -4,6 +4,8 @@ packages:
 allowBuilds:
   '@nestjs/core': true
   '@prisma/engines': true
+  # Telemetría de swagger-ui-dist: no se permite
+  '@scarf/scarf': false
   '@swc/core': true
   prisma: true
   unrs-resolver: true
