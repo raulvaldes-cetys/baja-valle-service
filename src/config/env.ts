@@ -10,6 +10,8 @@ const booleanString = z
   .enum(['true', 'false'])
   .transform((value) => value === 'true');
 
+const positiveInt = z.coerce.number().int().positive();
+
 const corsOrigins = z
   .string()
   .default('')
@@ -28,11 +30,18 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
 
   DATABASE_URL: postgresUrl,
-  // Solo lo usa el CLI de Prisma para migraciones; la API no lo necesita en runtime
+  // Solo lo usa el CLI de Prisma
   DIRECT_URL: postgresUrl.optional(),
 
   CORS_ORIGINS: corsOrigins,
   SWAGGER_ENABLED: booleanString.default(false),
+
+  THROTTLE_GLOBAL_PER_MINUTE: positiveInt.default(100),
+  THROTTLE_FORM_PER_MINUTE: positiveInt.default(3),
+  THROTTLE_FORM_PER_DAY: positiveInt.default(20),
+  THROTTLE_AUTH_PER_MINUTE: positiveInt.default(5),
+  THROTTLE_REFRESH_PER_MINUTE: positiveInt.default(20),
+  THROTTLE_PROFILE_PER_15_MINUTES: positiveInt.default(5),
 
   MAIL_HOST: z.string().min(1),
   MAIL_PORT: z.coerce.number().int().positive(),
@@ -44,10 +53,6 @@ export const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-/**
- * Valida process.env al arrancar. Si falta o es inválida alguna variable, la API no arranca.
- * El mensaje lista solo los nombres de las variables con error, nunca sus valores.
- */
 export function validateEnv(config: Record<string, unknown>): Env {
   const result = envSchema.safeParse(config);
 

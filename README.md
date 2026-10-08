@@ -68,3 +68,4 @@ Para una BD administrada (Supabase hoy, Azure después):
 - **SQL Injection:** ESLint prohíbe `$queryRawUnsafe` y `$executeRawUnsafe`. Para SQL crudo usa `` $queryRaw`...` `` con parámetros.
 - **Dependencias:** `pnpm audit --audit-level high` en CI y Dependabot semanal. Las excepciones aceptadas están documentadas en `pnpm-workspace.yaml` (`auditConfig.ignoreGhsas`).
 - **HTTP:** headers de seguridad (helmet), CORS solo para `CORS_ORIGINS`, límite de body de 100 kb y validación estricta de DTOs e ids.
+- **Rate limiting:** 100 peticiones/min por IP en toda la API. Los formularios de contacto y cotización comparten un límite de 3/min y 20/día por cliente. Se responde 429 con `Retry-After` y cada bloqueo queda en el log. Los límites se ajustan con las variables `THROTTLE_*` (ver `src/config/env.ts`).

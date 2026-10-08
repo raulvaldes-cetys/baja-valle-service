@@ -1,8 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { RateLimit } from '../common/rate-limit/rate-limit.policies';
 import { CartMailDto } from './dto/cart-mail.dto';
 import { ContactMailDto } from './dto/contact-mail.dto';
 import { MailService } from './mail.service';
 
+@RateLimit('form')
 @Controller('mail')
 export class MailController {
   constructor(private readonly mailService: MailService) {}
