@@ -62,11 +62,20 @@ describe('CategoryController (e2e)', () => {
         .expect(200);
 
       expect(res.body).toHaveLength(2);
-      expect(res.body[0]).toMatchObject({ name: 'Vinos' });
+      expect((res.body as { name: string }[])[0]).toMatchObject({
+        name: 'Vinos',
+      });
     });
   });
 
   describe('GET /categories/:id', () => {
+    it.each(['abc', '0', '-1', '1.5', '2147483648'])(
+      '400 – invalid id %p',
+      async (id) => {
+        await request(app.getHttpServer()).get(`/categories/${id}`).expect(400);
+      },
+    );
+
     it('200 – returns category by id', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
 

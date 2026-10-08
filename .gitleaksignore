@@ -1,0 +1,3 @@
+# Falsos positivos revisados manualmente (formato: commit:archivo:regla:línea)
+# Token de ejemplo del README de la plantilla de NestJS (abc123def456), no es un secreto real
+292d6ab6e3cbc8767df0df5b4fd7b83473122936:README.md:generic-api-key:5

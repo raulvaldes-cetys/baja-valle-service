@@ -1,98 +1,63 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Baja Valle Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST de Baja Valle: catálogo de productos y categorías, y envío de formularios de contacto y cotización por correo.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Stack:** NestJS 11 · Prisma 7 (PostgreSQL) · nodemailer · exceljs · pnpm
 
-## Description
+## Requisitos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js 22
+- pnpm (versión fijada en `packageManager`; con `corepack enable` se usa la correcta)
+- Docker (Postgres local)
+- [gitleaks](https://github.com/gitleaks/gitleaks#installing): **obligatorio**, el hook de pre-commit no deja hacer commit sin él
+  - macOS: `brew install gitleaks`
+  - Windows: `winget install gitleaks`
 
-## Project setup
+## Configuración local
 
 ```bash
-$ npm install
+corepack enable
+pnpm install                # también instala el hook de pre-commit (husky)
+cp .env.example .env        # apunta a la BD local; completa las variables MAIL_*
+pnpm db:up                  # Postgres 17 en 127.0.0.1:5432
+pnpm db:migrate             # migraciones + permisos y RLS (prisma/sql/grants.sql)
+pnpm start:dev
 ```
 
-## Compile and run the project
+- API: http://localhost:3000
+- Documentación (Swagger): http://localhost:3000/docs (solo con `SWAGGER_ENABLED=true`, que viene en `.env.example`; apagada por defecto)
 
-```bash
-# development
-$ npm run start
+Si falta una variable de entorno o tiene un formato inválido, la API no arranca y muestra cuál es (ver `src/config/env.ts`).
 
-# watch mode
-$ npm run start:dev
+## Scripts
 
-# production mode
-$ npm run start:prod
-```
+| Script | Qué hace |
+|---|---|
+| `pnpm start:dev` | API en modo watch |
+| `pnpm db:up` / `pnpm db:down` | Levanta / detiene el Postgres local |
+| `pnpm db:migrate` | `prisma migrate deploy` + `pnpm db:grants` |
+| `pnpm db:grants` | Aplica permisos de mínimo privilegio y RLS (idempotente) |
+| `pnpm lint:check` / `pnpm typecheck` | Verificaciones sin modificar archivos (las mismas del CI) |
+| `pnpm test` / `pnpm test:e2e` | Pruebas unitarias / end-to-end |
 
-## Run tests
+## Seguridad
 
-```bash
-# unit tests
-$ npm run test
+### Base de datos: mínimo privilegio
 
-# e2e tests
-$ npm run test:e2e
+| Rol | Variable | Permisos |
+|---|---|---|
+| `baja_valle_migrator` | `DIRECT_URL` | Dueño del esquema; solo para migraciones |
+| `baja_valle_app` | `DATABASE_URL` | Solo `SELECT/INSERT/UPDATE/DELETE`; sin DDL ni acceso a `_prisma_migrations` |
 
-# test coverage
-$ npm run test:cov
-```
+Todas las tablas tienen **RLS** activado con una política solo para `baja_valle_app`. En Supabase esto bloquea el acceso directo por la Data API (roles `anon`/`authenticated`).
 
-## Deployment
+Después de **cada** migración hay que correr `pnpm db:grants` (o usar `pnpm db:migrate`, que ya lo incluye).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Para crear el rol de la app en una BD administrada (Supabase/Azure), ver `prisma/sql/create-app-role.sql`.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Políticas verificadas automáticamente
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Secretos:** gitleaks en pre-commit y en CI. Los falsos positivos revisados van en `.gitleaksignore`.
+- **SQL Injection:** ESLint prohíbe `$queryRawUnsafe` y `$executeRawUnsafe`. Para SQL crudo usa `` $queryRaw`...` `` con parámetros.
+- **Dependencias:** `pnpm audit --audit-level high` en CI y Dependabot semanal. Las excepciones aceptadas están documentadas en `pnpm-workspace.yaml` (`auditConfig.ignoreGhsas`).
+- **HTTP:** headers de seguridad (helmet), CORS solo para `CORS_ORIGINS`, límite de body de 100 kb y validación estricta de DTOs e ids.

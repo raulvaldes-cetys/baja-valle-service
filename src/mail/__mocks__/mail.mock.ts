@@ -14,7 +14,7 @@ export const mockCartMailDto: CartMailDto = {
   correo: 'ana.garcia@ejemplo.com',
   ubicacion: 'Tijuana, Baja California',
   items: [
-    { nombre: 'Producto A', cantidad: 2 },
-    { nombre: 'Producto B', cantidad: 1 },
+    { nombre: 'Producto A', cantidad: 2, precio: 120 },
+    { nombre: 'Producto B', cantidad: 1, precio: 350 },
   ],
 };

@@ -3,7 +3,23 @@ packages:
 
 allowBuilds:
   '@nestjs/core': true
+  # Usa binarios precompilados; el script solo compila desde fuente si faltan
+  '@parcel/watcher': false
   '@prisma/engines': true
+  # Telemetría de swagger-ui-dist: no se permite
+  '@scarf/scarf': false
   '@swc/core': true
   prisma: true
   unrs-resolver: true
+
+overrides:
+  # Dependencia del CLI de Prisma (no se usa: la BD es Postgres). Parche dentro de 3.x
+  mysql2: '^3.22.0'
+
+auditConfig:
+  ignoreGhsas:
+    # deepmerge-ts <8 (stack exhaustion con objetos recursivos), vía prisma > @prisma/config.
+    # Riesgo aceptado: solo corre en el CLI de Prisma al generar/migrar, con configuración propia,
+    # nunca con entrada de usuarios. Forzar 8.x rompería la versión mayor que espera Prisma.
+    # Revisar en cada actualización de Prisma.
+    - GHSA-ggr8-5vv4-36mx

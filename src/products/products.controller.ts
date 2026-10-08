@@ -7,6 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { ParseBigIntIdPipe } from '../common/pipes/parse-id.pipe';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
@@ -21,8 +22,8 @@ export class ProductsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(BigInt(id));
+  findOne(@Param('id', ParseBigIntIdPipe) id: bigint) {
+    return this.productsService.findOne(id);
   }
 
   @Post()
@@ -31,12 +32,15 @@ export class ProductsController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
-    return this.productsService.update(BigInt(id), dto);
+  update(
+    @Param('id', ParseBigIntIdPipe) id: bigint,
+    @Body() dto: UpdateProductDto,
+  ) {
+    return this.productsService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(BigInt(id));
+  remove(@Param('id', ParseBigIntIdPipe) id: bigint) {
+    return this.productsService.remove(id);
   }
 }

@@ -3,7 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as nodemailer from 'nodemailer';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { mockCartMailDto, mockContactMailDto } from '../src/mail/__mocks__/mail.mock';
+import {
+  mockCartMailDto,
+  mockContactMailDto,
+} from '../src/mail/__mocks__/mail.mock';
 import { MailModule } from '../src/mail/mail.module';
 
 jest.mock('nodemailer', () => ({
@@ -12,10 +15,10 @@ jest.mock('nodemailer', () => ({
 
 describe('MailController (e2e)', () => {
   let app: INestApplication<App>;
-  let sendMailMock: jest.Mock;
+  let sendMailMock: jest.Mock<Promise<unknown>, [Record<string, unknown>]>;
 
   beforeAll(async () => {
-    sendMailMock = jest.fn();
+    sendMailMock = jest.fn<Promise<unknown>, [Record<string, unknown>]>();
     (nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: sendMailMock,
     });
@@ -68,6 +71,35 @@ describe('MailController (e2e)', () => {
         .send({ ...mockContactMailDto, correo: 'no-es-un-email' })
         .expect(400);
     });
+
+    it('400 – message longer than the limit', async () => {
+      await request(app.getHttpServer())
+        .post('/mail/contact')
+        .send({ ...mockContactMailDto, mensaje: 'x'.repeat(2001) })
+        .expect(400);
+    });
+
+    it('escapes HTML injected by the user in the email body', async () => {
+      sendMailMock.mockResolvedValue({});
+
+      await request(app.getHttpServer())
+        .post('/mail/contact')
+        .send({
+          ...mockContactMailDto,
+          nombre: '<b>Soporte</b>',
+          mensaje: '<a href="https://phishing.example">Verifica tu cuenta</a>',
+        })
+        .expect(204);
+
+      const { html, from } = sendMailMock.mock.calls[0][0] as {
+        html: string;
+        from: string;
+      };
+      expect(html).not.toContain('<a href');
+      expect(html).toContain('&lt;a href=&quot;https://phishing.example&quot;');
+      expect(html).toContain('&lt;b&gt;Soporte&lt;/b&gt;');
+      expect(from).not.toContain('Soporte');
+    });
   });
 
   describe('POST /mail/cart', () => {
@@ -93,6 +125,37 @@ describe('MailController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/mail/cart')
         .send({ ...mockCartMailDto, items: 'no-es-array' })
+        .expect(400);
+    });
+
+    it.each([
+      ['negative quantity', { cantidad: -1 }],
+      ['fractional quantity', { cantidad: 1.5 }],
+      ['zero price', { precio: 0 }],
+    ])('400 – item with %s', async (_label, override) => {
+      await request(app.getHttpServer())
+        .post('/mail/cart')
+        .send({
+          ...mockCartMailDto,
+          items: [{ ...mockCartMailDto.items[0], ...override }],
+        })
+        .expect(400);
+    });
+
+    it('400 – empty cart', async () => {
+      await request(app.getHttpServer())
+        .post('/mail/cart')
+        .send({ ...mockCartMailDto, items: [] })
+        .expect(400);
+    });
+
+    it('400 – more items than the limit', async () => {
+      await request(app.getHttpServer())
+        .post('/mail/cart')
+        .send({
+          ...mockCartMailDto,
+          items: Array.from({ length: 51 }, () => mockCartMailDto.items[0]),
+        })
         .expect(400);
     });
   });

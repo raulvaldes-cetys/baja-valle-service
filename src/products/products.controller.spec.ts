@@ -49,7 +49,7 @@ describe('ProductsController', () => {
     it('should return a product by string id', async () => {
       mockProductsService.findOne.mockResolvedValue(mockProduct);
 
-      const result = await controller.findOne('1');
+      const result = await controller.findOne(1n);
 
       expect(result).toEqual(mockProduct);
       expect(mockProductsService.findOne).toHaveBeenCalledWith(BigInt(1));
@@ -58,7 +58,7 @@ describe('ProductsController', () => {
     it('should propagate NotFoundException when product is not found', async () => {
       mockProductsService.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('99')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(99n)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -80,7 +80,7 @@ describe('ProductsController', () => {
       const updatedProduct = { ...mockProduct, ...mockUpdateProductDto };
       mockProductsService.update.mockResolvedValue(updatedProduct);
 
-      const result = await controller.update('1', mockUpdateProductDto);
+      const result = await controller.update(1n, mockUpdateProductDto);
 
       expect(result).toEqual(updatedProduct);
       expect(mockProductsService.update).toHaveBeenCalledWith(
@@ -93,7 +93,7 @@ describe('ProductsController', () => {
       mockProductsService.update.mockRejectedValue(new NotFoundException());
 
       await expect(
-        controller.update('99', mockUpdateProductDto),
+        controller.update(99n, mockUpdateProductDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -102,7 +102,7 @@ describe('ProductsController', () => {
     it('should delete a product and return the deleted record', async () => {
       mockProductsService.remove.mockResolvedValue(mockProduct);
 
-      const result = await controller.remove('1');
+      const result = await controller.remove(1n);
 
       expect(result).toEqual(mockProduct);
       expect(mockProductsService.remove).toHaveBeenCalledWith(BigInt(1));
@@ -111,7 +111,7 @@ describe('ProductsController', () => {
     it('should propagate NotFoundException when product does not exist', async () => {
       mockProductsService.remove.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.remove('99')).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(99n)).rejects.toThrow(NotFoundException);
     });
   });
 });

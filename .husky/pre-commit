@@ -1,0 +1,8 @@
+# Política de Code Leakage: ningún commit con secretos (ver .gitleaksignore para falsos positivos)
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "✖ gitleaks no está instalado y es obligatorio para hacer commit."
+  echo "  macOS: brew install gitleaks | Windows: winget install gitleaks | Linux: https://github.com/gitleaks/gitleaks#installing"
+  exit 1
+fi
+
+gitleaks git --pre-commit --staged --redact --no-banner --verbose
