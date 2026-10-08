@@ -49,7 +49,7 @@ describe('CategoryController', () => {
     it('should return a category by string id', async () => {
       mockCategoryService.findOne.mockResolvedValue(mockCategory);
 
-      const result = await controller.findOne('1');
+      const result = await controller.findOne(1);
 
       expect(result).toEqual(mockCategory);
       expect(mockCategoryService.findOne).toHaveBeenCalledWith(1);
@@ -58,7 +58,7 @@ describe('CategoryController', () => {
     it('should propagate NotFoundException when category is not found', async () => {
       mockCategoryService.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('99')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(99)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -80,7 +80,7 @@ describe('CategoryController', () => {
       const updatedCategory = { ...mockCategory, ...mockUpdateCategoryDto };
       mockCategoryService.update.mockResolvedValue(updatedCategory);
 
-      const result = await controller.update('1', mockUpdateCategoryDto);
+      const result = await controller.update(1, mockUpdateCategoryDto);
 
       expect(result).toEqual(updatedCategory);
       expect(mockCategoryService.update).toHaveBeenCalledWith(
@@ -93,7 +93,7 @@ describe('CategoryController', () => {
       mockCategoryService.update.mockRejectedValue(new NotFoundException());
 
       await expect(
-        controller.update('99', mockUpdateCategoryDto),
+        controller.update(99, mockUpdateCategoryDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -102,7 +102,7 @@ describe('CategoryController', () => {
     it('should delete a category and return the deleted record', async () => {
       mockCategoryService.remove.mockResolvedValue(mockCategory);
 
-      const result = await controller.remove('1');
+      const result = await controller.remove(1);
 
       expect(result).toEqual(mockCategory);
       expect(mockCategoryService.remove).toHaveBeenCalledWith(1);
@@ -111,7 +111,7 @@ describe('CategoryController', () => {
     it('should propagate NotFoundException when category does not exist', async () => {
       mockCategoryService.remove.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.remove('99')).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(99)).rejects.toThrow(NotFoundException);
     });
   });
 });

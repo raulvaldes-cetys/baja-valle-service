@@ -69,6 +69,13 @@ describe('CategoryController (e2e)', () => {
   });
 
   describe('GET /categories/:id', () => {
+    it.each(['abc', '0', '-1', '1.5', '2147483648'])(
+      '400 – invalid id %p',
+      async (id) => {
+        await request(app.getHttpServer()).get(`/categories/${id}`).expect(400);
+      },
+    );
+
     it('200 – returns category by id', async () => {
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
 

@@ -78,6 +78,13 @@ describe('ProductsController (e2e)', () => {
   });
 
   describe('GET /products/:id', () => {
+    it.each(['abc', '0', '-1', '1.5', '9223372036854775808'])(
+      '400 – invalid id %p',
+      async (id) => {
+        await request(app.getHttpServer()).get(`/products/${id}`).expect(400);
+      },
+    );
+
     it('200 – returns product by id', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
 
