@@ -61,12 +61,16 @@ describe('ProductsController (e2e)', () => {
 
   describe('GET /products', () => {
     it('200 – returns product summary list', async () => {
-      mockPrismaService.product.findMany.mockResolvedValue(mockProductSummaryList);
+      mockPrismaService.product.findMany.mockResolvedValue(
+        mockProductSummaryList,
+      );
 
-      const res = await request(app.getHttpServer()).get('/products').expect(200);
+      const res = await request(app.getHttpServer())
+        .get('/products')
+        .expect(200);
 
       expect(res.body).toHaveLength(2);
-      expect(res.body[0]).toMatchObject({
+      expect((res.body as Record<string, unknown>[])[0]).toMatchObject({
         name: 'Vino Tinto Gran Reserva',
         price: 450,
       });
@@ -77,7 +81,9 @@ describe('ProductsController (e2e)', () => {
     it('200 – returns product by id', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
 
-      const res = await request(app.getHttpServer()).get('/products/1').expect(200);
+      const res = await request(app.getHttpServer())
+        .get('/products/1')
+        .expect(200);
 
       expect(res.body).toMatchObject({
         name: mockProduct.name,

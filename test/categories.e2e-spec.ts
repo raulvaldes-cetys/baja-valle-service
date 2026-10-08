@@ -62,7 +62,9 @@ describe('CategoryController (e2e)', () => {
         .expect(200);
 
       expect(res.body).toHaveLength(2);
-      expect(res.body[0]).toMatchObject({ name: 'Vinos' });
+      expect((res.body as { name: string }[])[0]).toMatchObject({
+        name: 'Vinos',
+      });
     });
   });
 

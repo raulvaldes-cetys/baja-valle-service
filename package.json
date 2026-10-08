@@ -22,7 +22,9 @@
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "db:grants": "prisma db execute --file prisma/sql/grants.sql",
-    "db:migrate": "prisma migrate deploy && pnpm db:grants"
+    "db:migrate": "prisma migrate deploy && pnpm db:grants",
+    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

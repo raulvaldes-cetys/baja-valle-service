@@ -15,10 +15,10 @@ jest.mock('nodemailer', () => ({
 
 describe('MailController (e2e)', () => {
   let app: INestApplication<App>;
-  let sendMailMock: jest.Mock;
+  let sendMailMock: jest.Mock<Promise<unknown>, [Record<string, unknown>]>;
 
   beforeAll(async () => {
-    sendMailMock = jest.fn();
+    sendMailMock = jest.fn<Promise<unknown>, [Record<string, unknown>]>();
     (nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: sendMailMock,
     });
