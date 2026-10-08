@@ -25,7 +25,7 @@ pnpm start:dev
 ```
 
 - API: http://localhost:3000
-- Documentación (Swagger): http://localhost:3000/docs (deshabilitada en producción salvo `SWAGGER_ENABLED=true`)
+- Documentación (Swagger): http://localhost:3000/docs (solo con `SWAGGER_ENABLED=true`, que viene en `.env.example`; apagada por defecto)
 
 Si falta una variable de entorno o tiene un formato inválido, la API no arranca y muestra cuál es (ver `src/config/env.ts`).
 

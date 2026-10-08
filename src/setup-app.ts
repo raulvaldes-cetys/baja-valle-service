@@ -61,9 +61,8 @@ export function configureApp(
     }),
   );
 
-  const swaggerEnabled =
-    config.SWAGGER_ENABLED ?? config.NODE_ENV !== 'production';
-  if (swaggerEnabled) {
+  // Opt-in: si una variable falta en el despliegue, la documentación de la API no queda expuesta
+  if (config.SWAGGER_ENABLED) {
     const document = SwaggerModule.createDocument(
       app,
       new DocumentBuilder()

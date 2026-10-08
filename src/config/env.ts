@@ -32,7 +32,7 @@ export const envSchema = z.object({
   DIRECT_URL: postgresUrl.optional(),
 
   CORS_ORIGINS: corsOrigins,
-  SWAGGER_ENABLED: booleanString.optional(),
+  SWAGGER_ENABLED: booleanString.default(false),
 
   MAIL_HOST: z.string().min(1),
   MAIL_PORT: z.coerce.number().int().positive(),

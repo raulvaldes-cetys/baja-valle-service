@@ -19,6 +19,7 @@ describe('validateEnv', () => {
     expect(env.MAIL_PORT).toBe(465);
     expect(env.MAIL_SECURE).toBe(true);
     expect(env.CORS_ORIGINS).toEqual([]);
+    expect(env.SWAGGER_ENABLED).toBe(false);
   });
 
   it('should split and validate CORS_ORIGINS', () => {
