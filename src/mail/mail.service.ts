@@ -1,10 +1,13 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Workbook, type Borders, type Fill } from 'exceljs';
 import * as nodemailer from 'nodemailer';
+import { escapeHtml } from '../common/utils/escape-html';
 import { CartMailDto } from './dto/cart-mail.dto';
 import { ContactMailDto } from './dto/contact-mail.dto';
 
 const CURRENCY_FORMAT = '"$"#,##0.00';
+// Remitente fijo: el nombre que escribe el usuario nunca va en el From (evita suplantación)
+const SENDER_NAME = 'Baja Valle App';
 
 @Injectable()
 export class MailService {
@@ -21,7 +24,7 @@ export class MailService {
   async sendContact(dto: ContactMailDto): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: `"${dto.nombre} ${dto.apellido}" <${process.env.MAIL_USER}>`,
+        from: `"${SENDER_NAME}" <${process.env.MAIL_USER}>`,
         to: process.env.MAIL_TO,
         replyTo: dto.correo,
         subject: `Nuevo mensaje de contacto — ${dto.nombre} ${dto.apellido}`,
@@ -40,7 +43,7 @@ export class MailService {
       const workbook = await this.buildCartWorkbook(dto, folio);
 
       await this.transporter.sendMail({
-        from: `"${dto.nombre} ${dto.apellido}" <${process.env.MAIL_USER}>`,
+        from: `"${SENDER_NAME}" <${process.env.MAIL_USER}>`,
         to: process.env.MAIL_TO,
         replyTo: dto.correo,
         subject: `Nueva solicitud de cotización — ${dto.nombre} ${dto.apellido}`,
@@ -62,13 +65,18 @@ export class MailService {
   }
 
   private buildContactHtml(dto: ContactMailDto): string {
+    // Todo valor del usuario se escapa: evita inyectar links o formularios en el correo (phishing interno)
+    const nombre = escapeHtml(`${dto.nombre} ${dto.apellido}`);
+    const correo = escapeHtml(dto.correo);
+    const mensaje = escapeHtml(dto.mensaje).replace(/\r?\n/g, '<br />');
+
     return `
       <h2>Nuevo mensaje de contacto</h2>
-      <p><strong>Nombre:</strong> ${dto.nombre} ${dto.apellido}</p>
-      <p><strong>Correo:</strong> ${dto.correo}</p>
+      <p><strong>Nombre:</strong> ${nombre}</p>
+      <p><strong>Correo:</strong> ${correo}</p>
       <hr />
       <p><strong>Mensaje:</strong></p>
-      <p>${dto.mensaje}</p>
+      <p>${mensaje}</p>
     `;
   }
 

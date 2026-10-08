@@ -13,10 +13,10 @@ jest.mock('nodemailer', () => ({
 
 describe('MailService', () => {
   let service: MailService;
-  let sendMailMock: jest.Mock<unknown, [Record<string, unknown>]>;
+  let sendMailMock: jest.Mock<Promise<unknown>, [Record<string, unknown>]>;
 
   beforeEach(async () => {
-    sendMailMock = jest.fn<unknown, [Record<string, unknown>]>();
+    sendMailMock = jest.fn<Promise<unknown>, [Record<string, unknown>]>();
     (nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: sendMailMock,
     });
