@@ -104,5 +104,6 @@
     "setupFiles": [
       "<rootDir>/../test/setup-env.ts"
     ]
-  }
+  },
+  "packageManager": "pnpm@11.5.2"
 }
