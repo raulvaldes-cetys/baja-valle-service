@@ -14,15 +14,11 @@ type AppSecurityConfig = Pick<
   'NODE_ENV' | 'CORS_ORIGINS' | 'SWAGGER_ENABLED'
 >;
 
-/**
- * Configuración HTTP compartida por main.ts y las pruebas e2e,
- * para que las pruebas ejerciten exactamente los mismos controles que producción.
- */
 export function configureApp(
   app: NestExpressApplication,
   config: AppSecurityConfig,
 ): void {
-  // Detrás del proxy de Railway / Azure Container Apps; necesario para la IP real del cliente
+  // Detrás de un proxy: sin esto, req.ip sería la del proxy
   app.set('trust proxy', 1);
 
   const apiHelmet = helmet();
@@ -44,7 +40,6 @@ export function configureApp(
   app.useBodyParser('json', { limit: BODY_LIMIT });
   app.useBodyParser('urlencoded', { extended: false, limit: BODY_LIMIT });
 
-  // La app móvil no usa CORS; solo se permiten los orígenes web declarados
   app.enableCors({
     origin: config.CORS_ORIGINS.length > 0 ? config.CORS_ORIGINS : false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
@@ -61,7 +56,6 @@ export function configureApp(
     }),
   );
 
-  // Opt-in: si una variable falta en el despliegue, la documentación de la API no queda expuesta
   if (config.SWAGGER_ENABLED) {
     const document = SwaggerModule.createDocument(
       app,

@@ -1,5 +1,4 @@
-// Variables de entorno de prueba. Se definen antes de cargar cualquier módulo para que las pruebas
-// nunca lean el .env local (que apunta a la base de datos real) ni dependan de él en CI.
+// Fijas para que las pruebas nunca lean el .env local, que apunta a la base de datos real
 Object.assign(process.env, {
   NODE_ENV: 'test',
   DATABASE_URL: 'postgresql://test:test@127.0.0.1:5432/test',

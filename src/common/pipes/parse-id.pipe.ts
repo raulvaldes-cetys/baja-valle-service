@@ -11,7 +11,6 @@ function parsePositiveId(value: string, max: bigint): bigint {
   return BigInt(value);
 }
 
-/** Valida ids de columnas INTEGER (p. ej. categorías). Responde 400 en vez de 500 ante ids inválidos. */
 @Injectable()
 export class ParseIntIdPipe implements PipeTransform<string, number> {
   transform(value: string): number {
@@ -19,7 +18,6 @@ export class ParseIntIdPipe implements PipeTransform<string, number> {
   }
 }
 
-/** Valida ids de columnas BIGINT (p. ej. productos). Responde 400 en vez de 500 ante ids inválidos. */
 @Injectable()
 export class ParseBigIntIdPipe implements PipeTransform<string, bigint> {
   transform(value: string): bigint {

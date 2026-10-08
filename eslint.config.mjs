@@ -30,8 +30,6 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
-      // Política de SQL Injection: solo consultas parametrizadas.
-      // Para SQL crudo usar $queryRaw / $executeRaw con tagged template, nunca las variantes Unsafe.
       'no-restricted-properties': [
         'error',
         ...['$queryRawUnsafe', '$executeRawUnsafe'].map((property) => ({
