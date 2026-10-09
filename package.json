@@ -24,7 +24,8 @@
     "db:grants": "prisma db execute --file prisma/sql/grants.sql",
     "db:migrate": "prisma migrate deploy && pnpm db:grants",
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "crypto:keys": "node -e \"const key = () => require('node:crypto').randomBytes(32).toString('base64'); console.log('ENCRYPTION_KEYS=1:' + key()); console.log('BLIND_INDEX_KEY=' + key());\""
   },
   "dependencies": {
     "@nestjs/common": "^11.2.7",

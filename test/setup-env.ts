@@ -10,4 +10,6 @@ Object.assign(process.env, {
   MAIL_USER: 'no-reply@test.local',
   MAIL_PASS: 'test',
   MAIL_TO: 'ventas@test.local',
+  ENCRYPTION_KEYS: `1:${Buffer.alloc(32, 1).toString('base64')}`,
+  BLIND_INDEX_KEY: Buffer.alloc(32, 2).toString('base64'),
 });
