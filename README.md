@@ -19,6 +19,7 @@ API REST de Baja Valle: catálogo de productos y categorías, y envío de formul
 corepack enable
 pnpm install                # también instala el hook de pre-commit (husky)
 cp .env.example .env        # apunta a la BD local; completa las variables MAIL_*
+pnpm -s crypto:keys >> .env # genera ENCRYPTION_KEYS y BLIND_INDEX_KEY
 pnpm db:up                  # Postgres 17 en 127.0.0.1:5432
 pnpm db:migrate             # migraciones + permisos y RLS (prisma/sql/grants.sql)
 pnpm start:dev
@@ -37,6 +38,7 @@ Si falta una variable de entorno o tiene un formato inválido, la API no arranca
 | `pnpm db:up` / `pnpm db:down` | Levanta / detiene el Postgres local |
 | `pnpm db:migrate` | `prisma migrate deploy` + `pnpm db:grants` |
 | `pnpm db:grants` | Aplica permisos de mínimo privilegio y RLS (idempotente) |
+| `pnpm crypto:keys` | Genera llaves nuevas de cifrado e índice ciego |
 | `pnpm lint:check` / `pnpm typecheck` | Verificaciones sin modificar archivos (las mismas del CI) |
 | `pnpm test` / `pnpm test:e2e` | Pruebas unitarias / end-to-end |
 
@@ -61,6 +63,22 @@ Para una BD administrada (Supabase hoy, Azure después):
 4. Usar el rol de la app en `DATABASE_URL`. En el pooler de Supabase el usuario lleva el ref del proyecto: `baja_valle_app.<project-ref>`.
 
 > Si la red bloquea Postgres (por ejemplo, el firewall de la escuela), los pasos 1–3 se pueden pegar en el SQL Editor de Supabase, que funciona por HTTPS.
+
+### Cifrado de datos personales
+
+Los datos personales se cifran en la aplicación antes de guardarse (`src/common/crypto/encryption.service.ts`):
+
+- **AES-256-GCM**, IV aleatorio por valor. Formato `v<versión>.<iv>.<tag>.<ciphertext>`.
+- Cada valor se cifra ligado a su campo (por ejemplo `users.email`), así que no se puede mover a otra columna.
+- Para buscar por igualdad (por ejemplo el correo) se guarda un **índice ciego** HMAC-SHA256 con una llave distinta (`BLIND_INDEX_KEY`).
+- No se guardan datos de pago.
+
+**Rotación de la llave de cifrado**
+1. Agregar una versión nueva a `ENCRYPTION_KEYS` (`1:<llave>,2:<llave nueva>`). Se cifra siempre con la versión más alta, y las anteriores se siguen pudiendo descifrar.
+2. Re-cifrar los registros existentes con `EncryptionService.reencrypt`, solo los que marque `needsReencryption`.
+3. Quitar la versión anterior de `ENCRYPTION_KEYS`.
+
+`BLIND_INDEX_KEY` no tiene versiones: cambiarla obliga a recalcular todos los índices.
 
 ### Políticas verificadas automáticamente
 

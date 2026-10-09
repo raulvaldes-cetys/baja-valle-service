@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CategoryModule } from './category/category.module';
+import { CryptoModule } from './common/crypto/crypto.module';
 import { AppThrottlerGuard } from './common/rate-limit/app-throttler.guard';
 import { buildThrottlers } from './common/rate-limit/rate-limit.policies';
 import { Env, validateEnv } from './config/env';
@@ -37,6 +38,7 @@ import { ProductsModule } from './products/products.module';
         }),
       }),
     }),
+    CryptoModule,
     PrismaModule,
     ProductsModule,
     CategoryModule,
