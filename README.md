@@ -41,6 +41,7 @@ Si falta una variable de entorno o tiene un formato inválido, la API no arranca
 | `pnpm crypto:keys` | Genera llaves nuevas de cifrado e índice ciego |
 | `pnpm lint:check` / `pnpm typecheck` | Verificaciones sin modificar archivos (las mismas del CI) |
 | `pnpm test` / `pnpm test:e2e` | Pruebas unitarias / end-to-end |
+| `pnpm db:test:create` / `pnpm db:test:prepare` | Crea (una vez) y migra la BD `baja_valle_test`, que usan los e2e de auth |
 
 ## Seguridad
 

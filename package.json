@@ -25,7 +25,9 @@
     "db:migrate": "prisma migrate deploy && pnpm db:grants",
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "crypto:keys": "node -e \"const key = () => require('node:crypto').randomBytes(32).toString('base64'); console.log('ENCRYPTION_KEYS=1:' + key()); console.log('BLIND_INDEX_KEY=' + key());\""
+    "crypto:keys": "node -e \"const key = () => require('node:crypto').randomBytes(32).toString('base64'); console.log('ENCRYPTION_KEYS=1:' + key()); console.log('BLIND_INDEX_KEY=' + key());\"",
+    "db:test:create": "docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -c \"CREATE DATABASE baja_valle_test OWNER baja_valle_migrator\" -c \"REVOKE ALL ON DATABASE baja_valle_test FROM PUBLIC\" -c \"GRANT CONNECT ON DATABASE baja_valle_test TO baja_valle_app\"",
+    "db:test:prepare": "DIRECT_URL=${TEST_DIRECT_URL:-postgresql://baja_valle_migrator:migrator_local@127.0.0.1:5432/baja_valle_test} sh -c 'prisma migrate deploy && prisma db execute --file prisma/sql/grants.sql'"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.7",

@@ -1,7 +1,9 @@
 // Fijas para que las pruebas nunca lean el .env local, que apunta a la base de datos real
 Object.assign(process.env, {
   NODE_ENV: 'test',
-  DATABASE_URL: 'postgresql://test:test@127.0.0.1:5432/test',
+  DATABASE_URL:
+    process.env.TEST_DATABASE_URL ??
+    'postgresql://baja_valle_app:app_local@127.0.0.1:5432/baja_valle_test',
   CORS_ORIGINS: 'http://localhost:4321',
   SWAGGER_ENABLED: 'false',
   MAIL_HOST: 'smtp.test.local',
