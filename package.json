@@ -59,7 +59,7 @@
     "@swc/core": "^1.16.13",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.20.5",
+    "@types/node": "^24.19.2",
     "@types/nodemailer": "^8.0.2",
     "@types/supertest": "^6.0.3",
     "eslint": "^9.39.5",
@@ -107,5 +107,8 @@
       "<rootDir>/../test/setup-env.ts"
     ]
   },
-  "packageManager": "pnpm@11.5.2"
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=24.7.0"
+  }
 }

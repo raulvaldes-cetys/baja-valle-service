@@ -6,7 +6,7 @@ API REST de Baja Valle: catálogo de productos y categorías, y envío de formul
 
 ## Requisitos
 
-- Node.js 22
+- Node.js 24 (≥ 24.7, por `crypto.argon2`; con nvm: `nvm use`)
 - pnpm (versión fijada en `packageManager`; con `corepack enable` se usa la correcta)
 - Docker (Postgres local)
 - [gitleaks](https://github.com/gitleaks/gitleaks#installing): **obligatorio**, el hook de pre-commit no deja hacer commit sin él
