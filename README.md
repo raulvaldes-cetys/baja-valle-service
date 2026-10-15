@@ -45,6 +45,10 @@ Si falta una variable de entorno o tiene un formato inválido, la API no arranca
 | `pnpm test` / `pnpm test:e2e` | Pruebas unitarias / end-to-end |
 | `pnpm db:test:create` / `pnpm db:test:prepare` | Crea (una vez) y migra la BD `baja_valle_test`, que usan los e2e de auth |
 
+## Infraestructura
+
+La infraestructura de Azure (Terraform) está en [`infra/`](infra/README.md).
+
 ## Seguridad
 
 ### Base de datos: mínimo privilegio

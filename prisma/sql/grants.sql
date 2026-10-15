@@ -1,7 +1,13 @@
 GRANT USAGE ON SCHEMA public TO baja_valle_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO baja_valle_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO baja_valle_app;
-REVOKE ALL ON TABLE public._prisma_migrations FROM baja_valle_app;
+DO $$
+BEGIN
+  IF to_regclass('public._prisma_migrations') IS NOT NULL THEN
+    REVOKE ALL ON TABLE public._prisma_migrations FROM baja_valle_app;
+  END IF;
+END
+$$;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO baja_valle_app;
