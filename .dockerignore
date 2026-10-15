@@ -1,0 +1,17 @@
+.git
+.github
+.husky
+.env
+.env.*
+!.env.example
+node_modules
+dist
+coverage
+test
+src/generated
+**/*.spec.ts
+**/__mocks__
+docker
+docker-compose.yml
+*.md
+infra
