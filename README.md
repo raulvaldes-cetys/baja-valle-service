@@ -6,7 +6,7 @@ API REST de Baja Valle: catálogo de productos y categorías, y envío de formul
 
 ## Requisitos
 
-- Node.js 22
+- Node.js 24 (≥ 24.7, por `crypto.argon2`; con nvm: `nvm use`)
 - pnpm (versión fijada en `packageManager`; con `corepack enable` se usa la correcta)
 - Docker (Postgres local)
 - [gitleaks](https://github.com/gitleaks/gitleaks#installing): **obligatorio**, el hook de pre-commit no deja hacer commit sin él
@@ -19,7 +19,7 @@ API REST de Baja Valle: catálogo de productos y categorías, y envío de formul
 corepack enable
 pnpm install                # también instala el hook de pre-commit (husky)
 cp .env.example .env        # apunta a la BD local; completa las variables MAIL_*
-pnpm -s crypto:keys >> .env # genera ENCRYPTION_KEYS y BLIND_INDEX_KEY
+pnpm -s crypto:keys >> .env # genera ENCRYPTION_KEYS, BLIND_INDEX_KEY y JWT_ACCESS_SECRET
 pnpm db:up                  # Postgres 17 en 127.0.0.1:5432
 pnpm db:migrate             # migraciones + permisos y RLS (prisma/sql/grants.sql)
 pnpm start:dev
@@ -38,9 +38,12 @@ Si falta una variable de entorno o tiene un formato inválido, la API no arranca
 | `pnpm db:up` / `pnpm db:down` | Levanta / detiene el Postgres local |
 | `pnpm db:migrate` | `prisma migrate deploy` + `pnpm db:grants` |
 | `pnpm db:grants` | Aplica permisos de mínimo privilegio y RLS (idempotente) |
-| `pnpm crypto:keys` | Genera llaves nuevas de cifrado e índice ciego |
+| `pnpm crypto:keys` | Genera llaves nuevas de cifrado, índice ciego y JWT |
+| `pnpm crypto:reencrypt` | Re-cifra los datos personales con la versión más alta de `ENCRYPTION_KEYS` |
+| `pnpm db:seed-admin` | Crea el primer admin (`SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`) o promueve a ADMIN un usuario existente |
 | `pnpm lint:check` / `pnpm typecheck` | Verificaciones sin modificar archivos (las mismas del CI) |
 | `pnpm test` / `pnpm test:e2e` | Pruebas unitarias / end-to-end |
+| `pnpm db:test:create` / `pnpm db:test:prepare` | Crea (una vez) y migra la BD `baja_valle_test`, que usan los e2e de auth |
 
 ## Seguridad
 
@@ -64,6 +67,20 @@ Para una BD administrada (Supabase hoy, Azure después):
 
 > Si la red bloquea Postgres (por ejemplo, el firewall de la escuela), los pasos 1–3 se pueden pegar en el SQL Editor de Supabase, que funciona por HTTPS.
 
+### Autenticación y roles
+
+- **Roles:** invitado (sin sesión), `CLIENT` y `ADMIN`. Todas las rutas requieren sesión salvo las marcadas con `@Public()`; las de admin usan `@Roles(Role.ADMIN)`.
+- **Registro:** siempre crea `CLIENT`. El primer admin se crea con `pnpm db:seed-admin`:
+  ```bash
+  read -s SEED_ADMIN_PASSWORD && export SEED_ADMIN_PASSWORD
+  SEED_ADMIN_EMAIL=admin@ejemplo.com pnpm db:seed-admin
+  ```
+- **Contraseñas:** argon2id nativo de Node, mínimo 10 caracteres. Se rechazan las contraseñas comunes y las que contienen el correo.
+- **Login:** respuesta genérica ante cualquier error. Bloqueo de 15 minutos tras 5 intentos fallidos.
+- **Access token:** JWT HS256 de 15 minutos (`Authorization: Bearer`). Lleva el id de sesión, que se valida en cada petición, así que un logout corta el acceso de inmediato.
+- **Refresh token:** opaco, de 7 días, guardado como SHA-256. Rota en cada `/auth/refresh`; si se reutiliza uno ya usado, se cierra toda la familia de sesiones.
+- **Perfil (`/users/me`):** cambiar correo o contraseña y borrar la cuenta piden la contraseña actual. Cambiar la contraseña cierra las demás sesiones.
+
 ### Cifrado de datos personales
 
 Los datos personales se cifran en la aplicación antes de guardarse (`src/common/crypto/encryption.service.ts`):
@@ -75,7 +92,7 @@ Los datos personales se cifran en la aplicación antes de guardarse (`src/common
 
 **Rotación de la llave de cifrado**
 1. Agregar una versión nueva a `ENCRYPTION_KEYS` (`1:<llave>,2:<llave nueva>`). Se cifra siempre con la versión más alta, y las anteriores se siguen pudiendo descifrar.
-2. Re-cifrar los registros existentes con `EncryptionService.reencrypt`, solo los que marque `needsReencryption`.
+2. `pnpm crypto:reencrypt`.
 3. Quitar la versión anterior de `ENCRYPTION_KEYS`.
 
 `BLIND_INDEX_KEY` no tiene versiones: cambiarla obliga a recalcular todos los índices.

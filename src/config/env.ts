@@ -94,15 +94,26 @@ export const envSchema = z
 
     ENCRYPTION_KEYS: versionedKeys,
     BLIND_INDEX_KEY: base64Key,
+
+    JWT_ACCESS_SECRET: base64Key,
+    JWT_ACCESS_TTL_SECONDS: positiveInt.default(15 * 60),
+    JWT_ISSUER: z.string().min(1).default('baja-valle-api'),
+    JWT_AUDIENCE: z.string().min(1).default('baja-valle'),
+    REFRESH_TOKEN_TTL_DAYS: positiveInt.default(7),
   })
   .refine(
-    (env) =>
-      [...env.ENCRYPTION_KEYS.values()].every(
-        (key) => !key.equals(env.BLIND_INDEX_KEY),
-      ),
+    (env) => {
+      const keys = [
+        ...env.ENCRYPTION_KEYS.values(),
+        env.BLIND_INDEX_KEY,
+        env.JWT_ACCESS_SECRET,
+      ].map((key) => key.toString('hex'));
+      return new Set(keys).size === keys.length;
+    },
     {
       path: ['BLIND_INDEX_KEY'],
-      message: 'Debe ser distinta de las llaves de ENCRYPTION_KEYS',
+      message:
+        'ENCRYPTION_KEYS, BLIND_INDEX_KEY y JWT_ACCESS_SECRET deben ser llaves distintas',
     },
   );
 

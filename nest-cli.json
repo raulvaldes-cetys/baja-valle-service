@@ -9,6 +9,9 @@
         "swcrcPath": ".swcrc"
       }
     },
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "assets": [
+      "auth/common-passwords.txt"
+    ]
   }
 }
