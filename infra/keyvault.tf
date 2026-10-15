@@ -24,8 +24,23 @@ resource "azurerm_role_assignment" "kv_secrets_officer" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+resource "azurerm_user_assigned_identity" "migrate" {
+  name                = "id-${local.name}-migrate"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = local.tags
+}
+
+# Roles scoped to individual secrets: the API cannot read the migration credentials and vice versa
 resource "azurerm_role_assignment" "api_kv_secrets_user" {
-  scope                = azurerm_key_vault.main.id
+  for_each             = toset(values(local.api_secrets))
+  scope                = "${azurerm_key_vault.main.id}/secrets/${each.value}"
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.api.principal_id
+}
+
+resource "azurerm_role_assignment" "migrate_kv_secrets_user" {
+  scope                = "${azurerm_key_vault.main.id}/secrets/${azurerm_key_vault_secret.migrator_database_url.name}"
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.migrate.principal_id
 }

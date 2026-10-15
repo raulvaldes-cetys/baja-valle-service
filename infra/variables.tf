@@ -31,3 +31,8 @@ variable "admin_ip" {
   type        = string
   default     = ""
 }
+
+variable "api_image_tag" {
+  description = "Image tag for the first deployment; later deployments update the image from CI"
+  type        = string
+}
