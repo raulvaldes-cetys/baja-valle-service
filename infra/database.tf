@@ -2,7 +2,7 @@ locals {
   db_name      = "baja_valle"
   db_admin     = "bvadmin"
   db_app_role  = "baja_valle_app"
-  db_conn_opts = "sslmode=require"
+  db_conn_opts = "sslmode=verify-full"
 }
 
 resource "random_password" "db_admin" {
