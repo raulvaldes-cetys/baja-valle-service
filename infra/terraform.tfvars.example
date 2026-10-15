@@ -1,3 +1,4 @@
 subscription_id = "00000000-0000-0000-0000-000000000000"
 budget_contact_email = "team@example.com"
 admin_ip = ""
+api_image_tag = "<git sha of the first image>"

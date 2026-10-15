@@ -37,6 +37,19 @@ The remote state uses Entra ID authentication (`use_azuread_auth`). The storage 
 
 `bootstrap/terraform.tfstate` only holds the names of the state resources; if it is lost, they can be imported again.
 
+## API and migrations
+
+- The API runs on Container Apps (`ca-bajavalle-api`), scale 0–1, 0.25 vCPU / 0.5 GiB. After scaling to zero the first request takes ~30 s.
+- The environment is created with the `azapi` provider in `ConsumptionOnly` mode: `azurerm` cannot set the mode, and new environments default to `Express`, which rejects Key Vault secret references.
+- Secrets are Key Vault references resolved by each app's managed identity. Roles are scoped per secret: the API identity reads only its own secrets and the migrations identity only `migrator-database-url`.
+- Terraform ignores the container image after the first deployment; CI deploys new images.
+- Migrations and grants run in the `caj-bajavalle-migrate` job:
+
+  ```bash
+  az containerapp job start -g rg-bajavalle-prod -n caj-bajavalle-migrate
+  az containerapp job execution list -g rg-bajavalle-prod -n caj-bajavalle-migrate -o table
+  ```
+
 ## Database access
 
 The server only accepts TLS and admits Azure services plus the optional `admin_ip` variable. Set `admin_ip` to your public IP only while running migrations or importing data, then set it back to `""` and apply.
