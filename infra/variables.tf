@@ -36,3 +36,9 @@ variable "api_image_tag" {
   description = "Image tag for the first deployment; later deployments update the image from CI"
   type        = string
 }
+
+variable "github_repository" {
+  description = "Repository allowed to deploy with OIDC (owner/name)"
+  type        = string
+  default     = "raulvaldes-cetys/baja-valle-service"
+}
