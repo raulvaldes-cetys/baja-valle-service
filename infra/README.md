@@ -50,6 +50,10 @@ The remote state uses Entra ID authentication (`use_azuread_auth`). The storage 
   az containerapp job execution list -g rg-bajavalle-prod -n caj-bajavalle-migrate -o table
   ```
 
+## Catalog images
+
+Product and category images live in the `catalog-images` container of `stbajavalle7kao6` (anonymous read of individual blobs only; listing is private). `scripts/migrate-catalog-images.sh` was used once to copy them from Supabase Storage and rewrite the URLs in the database.
+
 ## Database access
 
 The server only accepts TLS and admits Azure services plus the optional `admin_ip` variable. Set `admin_ip` to your public IP only while running migrations or importing data, then set it back to `""` and apply.

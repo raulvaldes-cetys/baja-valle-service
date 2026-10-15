@@ -17,3 +17,7 @@ output "api_url" {
 output "migrate_job" {
   value = azurerm_container_app_job.migrate.name
 }
+
+output "catalog_images_url" {
+  value = "${azurerm_storage_account.catalog.primary_blob_endpoint}${azurerm_storage_container.catalog_images.name}/"
+}
