@@ -11,7 +11,7 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    ".*/generated/prisma/client$": "<rootDir>/../src/__mocks__/prismaGenerated.ts"
+    "^(\\.{1,2}/.*)\\.js$": "$1"
   },
   "setupFiles": [
     "<rootDir>/setup-env.ts"

@@ -6,6 +6,7 @@ Object.assign(process.env, {
     'postgresql://baja_valle_app:app_local@127.0.0.1:5432/baja_valle_test',
   CORS_ORIGINS: 'http://localhost:4321',
   SWAGGER_ENABLED: 'false',
+  THROTTLE_AUTH_PER_MINUTE: '50',
   MAIL_HOST: 'smtp.test.local',
   MAIL_PORT: '465',
   MAIL_SECURE: 'true',
@@ -14,4 +15,5 @@ Object.assign(process.env, {
   MAIL_TO: 'ventas@test.local',
   ENCRYPTION_KEYS: `1:${Buffer.alloc(32, 1).toString('base64')}`,
   BLIND_INDEX_KEY: Buffer.alloc(32, 2).toString('base64'),
+  JWT_ACCESS_SECRET: Buffer.alloc(32, 3).toString('base64'),
 });

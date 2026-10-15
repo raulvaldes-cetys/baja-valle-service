@@ -5,6 +5,7 @@ const key = (fill: number) => Buffer.alloc(32, fill).toString('base64');
 const validEnv = {
   ENCRYPTION_KEYS: `1:${key(1)}`,
   BLIND_INDEX_KEY: key(2),
+  JWT_ACCESS_SECRET: key(4),
   DATABASE_URL: 'postgresql://app:secret@localhost:5432/baja_valle',
   MAIL_HOST: 'smtp.example.com',
   MAIL_PORT: '465',
@@ -96,10 +97,14 @@ describe('validateEnv', () => {
       ).toThrow(/ENCRYPTION_KEYS/);
     });
 
-    it('should reject a BLIND_INDEX_KEY that reuses an encryption key', () => {
-      expect(() =>
-        validateEnv({ ...validEnv, BLIND_INDEX_KEY: key(1) }),
-      ).toThrow(/BLIND_INDEX_KEY/);
+    it.each([
+      ['BLIND_INDEX_KEY', key(1)],
+      ['JWT_ACCESS_SECRET', key(1)],
+      ['JWT_ACCESS_SECRET', key(2)],
+    ])('should reject a %s that reuses another key', (name, value) => {
+      expect(() => validateEnv({ ...validEnv, [name]: value })).toThrow(
+        /deben ser llaves distintas/,
+      );
     });
 
     it('should never include key material in the error message', () => {

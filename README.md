@@ -19,7 +19,7 @@ API REST de Baja Valle: catálogo de productos y categorías, y envío de formul
 corepack enable
 pnpm install                # también instala el hook de pre-commit (husky)
 cp .env.example .env        # apunta a la BD local; completa las variables MAIL_*
-pnpm -s crypto:keys >> .env # genera ENCRYPTION_KEYS y BLIND_INDEX_KEY
+pnpm -s crypto:keys >> .env # genera ENCRYPTION_KEYS, BLIND_INDEX_KEY y JWT_ACCESS_SECRET
 pnpm db:up                  # Postgres 17 en 127.0.0.1:5432
 pnpm db:migrate             # migraciones + permisos y RLS (prisma/sql/grants.sql)
 pnpm start:dev
