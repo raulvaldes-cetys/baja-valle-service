@@ -50,6 +50,12 @@ The remote state uses Entra ID authentication (`use_azuread_auth`). The storage 
   az containerapp job execution list -g rg-bajavalle-prod -n caj-bajavalle-migrate -o table
   ```
 
+## Continuous deployment
+
+Every push to `master` that passes CI is deployed by the `deploy` job in `.github/workflows/ci.yml`: build the image (tagged with the commit SHA) → push to ACR → run the migrations job with that image → new API revision → wait until the API answers.
+
+GitHub Actions signs in to Azure with OIDC through `id-bajavalle-github`, whose federated credential only accepts this repository's `master` branch. It can push images and update the API app and the migrations job, nothing else. The repository only stores identifiers as variables (`terraform -chdir=infra output github_deploy`), never secrets.
+
 ## Catalog images
 
 Product and category images live in the `catalog-images` container of `stbajavalle7kao6` (anonymous read of individual blobs only; listing is private). `scripts/migrate-catalog-images.sh` was used once to copy them from Supabase Storage and rewrite the URLs in the database.
