@@ -1,8 +1,8 @@
 # Baja Valle Service
 
-API REST de Baja Valle: catálogo de productos y categorías, y envío de formularios de contacto y cotización por correo.
+API REST de Baja Valle: catálogo de productos y categorías, cuentas de usuario y envío de formularios de contacto y cotización por correo. En producción corre en Azure (ver [`infra/`](infra/README.md)).
 
-**Stack:** NestJS 11 · Prisma 7 (PostgreSQL) · nodemailer · exceljs · pnpm
+**Stack:** NestJS 11 · Prisma 7 (PostgreSQL) · nodemailer · exceljs · pnpm · Terraform (Azure)
 
 ## Requisitos
 
@@ -58,18 +58,13 @@ La infraestructura de Azure (Terraform) está en [`infra/`](infra/README.md).
 | `baja_valle_migrator` | `DIRECT_URL` | Dueño del esquema; solo para migraciones |
 | `baja_valle_app` | `DATABASE_URL` | Solo `SELECT/INSERT/UPDATE/DELETE`; sin DDL ni acceso a `_prisma_migrations` |
 
-Todas las tablas tienen **RLS** activado con una política solo para `baja_valle_app`. En Supabase esto bloquea el acceso directo por la Data API (roles `anon`/`authenticated`).
+Todas las tablas tienen **RLS** activado con una política solo para `baja_valle_app`.
 
 Después de **cada** migración hay que correr `pnpm db:grants` (o usar `pnpm db:migrate`, que ya lo incluye).
 
-Para una BD administrada (Supabase hoy, Azure después):
+En Azure, el rol de la app y los grants se crearon una vez con `prisma/sql/create-app-role.sql` y `pnpm db:grants`. Desde entonces, el job de migraciones aplica `grants.sql` después de cada `prisma migrate deploy` (ver [`infra/README.md`](infra/README.md)).
 
-1. Crear el rol de la app una vez: `prisma/sql/create-app-role.sql`, con una contraseña generada.
-2. `pnpm db:grants`.
-3. **Solo Supabase:** `prisma/sql/supabase-lockdown.sql`. Revoca todos los privilegios de `anon` y `authenticated`, incluido `TRUNCATE`, que RLS no controla.
-4. Usar el rol de la app en `DATABASE_URL`. En el pooler de Supabase el usuario lleva el ref del proyecto: `baja_valle_app.<project-ref>`.
-
-> Si la red bloquea Postgres (por ejemplo, el firewall de la escuela), los pasos 1–3 se pueden pegar en el SQL Editor de Supabase, que funciona por HTTPS.
+`prisma/sql/supabase-lockdown.sql` solo aplica a Supabase, que se usó antes de migrar a Azure: revoca los privilegios de los roles `anon` y `authenticated`, incluido `TRUNCATE`, que RLS no controla.
 
 ### Autenticación y roles
 
