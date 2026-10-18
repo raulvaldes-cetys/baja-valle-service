@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   secrets:
@@ -75,3 +75,60 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: pnpm audit --audit-level high
+
+  deploy:
+    name: Deploy to Azure
+    needs: [secrets, checks, audit]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      RG: ${{ vars.AZURE_RESOURCE_GROUP }}
+      APP: ${{ vars.API_APP_NAME }}
+      JOB: ${{ vars.MIGRATE_JOB_NAME }}
+      IMAGE: ${{ vars.ACR_NAME }}.azurecr.io/baja-valle-api:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
+      - name: Build and push the image
+        run: |
+          az acr login -n "${{ vars.ACR_NAME }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+      - name: Run database migrations
+        run: |
+          az containerapp job update -g "$RG" -n "$JOB" --image "$IMAGE" -o none
+          execution=$(az containerapp job start -g "$RG" -n "$JOB" --query name -o tsv)
+          for _ in $(seq 1 60); do
+            status=$(az containerapp job execution show -g "$RG" -n "$JOB" --job-execution-name "$execution" --query properties.status -o tsv)
+            case "$status" in
+              Succeeded) exit 0 ;;
+              Failed|Stopped|Degraded)
+                az containerapp job logs show -g "$RG" -n "$JOB" --execution "$execution" --container migrate --format text || true
+                exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "Migrations did not finish in time"
+          exit 1
+      - name: Deploy the API
+        run: |
+          az containerapp update -g "$RG" -n "$APP" --image "$IMAGE" -o none
+          url="https://$(az containerapp show -g "$RG" -n "$APP" --query properties.configuration.ingress.fqdn -o tsv)"
+          for _ in $(seq 1 18); do
+            if curl -fsS --max-time 20 "$url/" >/dev/null; then exit 0; fi
+            sleep 10
+          done
+          echo "The API did not answer after the deployment"
+          exit 1
+
