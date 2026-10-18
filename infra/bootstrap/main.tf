@@ -44,6 +44,10 @@ resource "azurerm_storage_account" "tfstate" {
       days = 7
     }
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Shared keys are disabled, so state data access is RBAC only
@@ -64,4 +68,8 @@ resource "azurerm_storage_container" "tfstate" {
   container_access_type = "private"
 
   depends_on = [time_sleep.rbac_propagation]
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }

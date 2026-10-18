@@ -1,0 +1,13 @@
+misconfigurations:
+  - id: AZU-0007
+    paths: ["storage.tf"]
+    statement: Catalog images are public by design; only individual blobs are readable and listing stays private.
+  - id: AZU-0012
+    paths: ["storage.tf"]
+    statement: The catalog image account must be reachable from any client of the app.
+  - id: AZU-0012
+    paths: ["bootstrap/main.tf"]
+    statement: State access is Entra ID only (shared keys disabled); operators and CI runners have no fixed IPs.
+  - id: AZU-0013
+    paths: ["keyvault.tf"]
+    statement: Container Apps on the Consumption plan have no fixed outbound IPs and are not a Key Vault trusted service; access is restricted by per-secret RBAC instead.

@@ -11,6 +11,10 @@ resource "azurerm_storage_account" "catalog" {
   # Required for the blob-level public read of catalog images; listing stays private
   allow_nested_items_to_be_public = true
   tags                            = local.tags
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_role_assignment" "operator_catalog_blob" {
@@ -30,4 +34,8 @@ resource "azurerm_storage_container" "catalog_images" {
   container_access_type = "blob"
 
   depends_on = [time_sleep.catalog_rbac_propagation]
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }

@@ -50,6 +50,20 @@ The remote state uses Entra ID authentication (`use_azuread_auth`). The storage 
   az containerapp job execution list -g rg-bajavalle-prod -n caj-bajavalle-migrate -o table
   ```
 
+## Checks
+
+CI runs `terraform fmt -check`, `terraform validate` (both configurations), `tflint` with the azurerm ruleset (`.tflint.hcl`) and Trivy, which fails on high or critical findings. Accepted findings are listed with their reason in `.trivyignore.yaml`:
+
+| Finding | Resource | Why it is accepted |
+|---|---|---|
+| AZU-0007, AZU-0012 | Catalog image storage | Product images are public by design; only individual blobs are readable |
+| AZU-0012 | State storage | Access is Entra ID only (no shared keys); operators and CI have no fixed IPs |
+| AZU-0013 | Key Vault | Consumption Container Apps have no fixed outbound IPs and are not a trusted service; per-secret RBAC instead |
+
+Also accepted (medium/low): public network access to PostgreSQL (see *Database access*), no customer-managed keys or geo-redundant storage (cost), and purge protection disabled on Key Vault (so the project can be torn down).
+
+Resources holding data have `prevent_destroy`. Tearing the environment down at the end of the course requires removing those lifecycle blocks first, on purpose.
+
 ## Continuous deployment
 
 Every push to `master` that passes CI is deployed by the `deploy` job in `.github/workflows/ci.yml`: build the image (tagged with the commit SHA) → push to ACR → run the migrations job with that image → new API revision → wait until the API answers.
