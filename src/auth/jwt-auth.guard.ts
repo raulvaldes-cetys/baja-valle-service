@@ -35,12 +35,15 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Se requiere iniciar sesión');
     }
 
-    // Un token inválido nunca se degrada a invitado, ni en rutas públicas
     const token = BEARER.exec(header)?.[1];
     const payload = token && (await this.verify(token));
     const session = payload && (await this.sessions.findActive(payload.sid));
 
     if (!payload || !session || session.userId !== payload.sub) {
+      // /auth/refresh se llama justo cuando el access token ya venció
+      if (isPublic) {
+        return true;
+      }
       throw new UnauthorizedException('Sesión inválida o expirada');
     }
 
