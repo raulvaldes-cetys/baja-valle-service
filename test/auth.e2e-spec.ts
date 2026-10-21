@@ -222,6 +222,10 @@ describe('Auth (e2e)', () => {
           .send({ refreshToken: first.refreshToken })
           .expect(200)
       ).body as AuthBody;
+      await prisma.session.updateMany({
+        where: { revokedAt: { not: null } },
+        data: { revokedAt: new Date(Date.now() - 60 * 1000) },
+      });
 
       await http()
         .post('/auth/refresh')
@@ -233,6 +237,25 @@ describe('Auth (e2e)', () => {
         .post('/auth/refresh')
         .send({ refreshToken: second.refreshToken })
         .expect(401);
+    });
+
+    it('keeps the session when two refreshes with the same token arrive together', async () => {
+      const first = await register();
+
+      const responses = await Promise.all([
+        http().post('/auth/refresh').send({ refreshToken: first.refreshToken }),
+        http().post('/auth/refresh').send({ refreshToken: first.refreshToken }),
+      ]);
+
+      const statuses = responses.map((res) => res.status).sort();
+      expect(statuses).toEqual([200, 401]);
+      const winner = responses.find((res) => res.status === 200)!
+        .body as AuthBody;
+      await http().get('/auth/me').set(bearer(winner.accessToken)).expect(200);
+      await http()
+        .post('/auth/refresh')
+        .send({ refreshToken: winner.refreshToken })
+        .expect(200);
     });
 
     it('rejects an unknown refresh token', async () => {
