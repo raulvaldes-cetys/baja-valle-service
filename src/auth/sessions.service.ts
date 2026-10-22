@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const USER_AGENT_MAX = 255;
+const REUSE_GRACE_MS = 10 * 1000;
 
 const hashToken = (token: string) =>
   createHash('sha256').update(token).digest('base64url');
@@ -50,12 +51,24 @@ export class SessionsService {
       throw new UnauthorizedException('Sesión inválida o expirada');
     }
 
-    // Un refresh token ya usado indica que pudo ser robado: se cierra toda la familia
     const claimed = await this.prisma.session.updateMany({
       where: { id: session.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     if (claimed.count !== 1) {
+      // Dos refresh simultáneos con el mismo token no son un robo: solo falla el segundo
+      const used = await this.prisma.session.findUnique({
+        where: { id: session.id },
+        select: { revokedAt: true },
+      });
+      if (
+        used?.revokedAt &&
+        Date.now() - used.revokedAt.getTime() < REUSE_GRACE_MS
+      ) {
+        throw new UnauthorizedException('Sesión inválida o expirada');
+      }
+
+      // Un refresh token ya usado después de ese margen indica que pudo ser robado
       await this.revokeFamily(session.familyId);
       this.logger.warn(
         `Reutilización de refresh token: familia ${session.familyId} revocada (usuario ${session.userId})`,
