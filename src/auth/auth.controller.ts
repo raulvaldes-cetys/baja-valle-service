@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { RateLimit } from '../common/rate-limit/rate-limit.policies';
-import { CurrentUser, Public } from './auth.decorators';
+import { CurrentUser, IgnoreAccessToken, Public } from './auth.decorators';
 import { AuthService } from './auth.service';
 import type { AuthUser } from './auth.types';
 import { LoginDto, RefreshDto, RegisterDto } from './dto/auth.dto';
@@ -36,6 +36,7 @@ export class AuthController {
   }
 
   @Public()
+  @IgnoreAccessToken()
   @RateLimit('refresh')
   @Post('refresh')
   @HttpCode(HttpStatus.OK)

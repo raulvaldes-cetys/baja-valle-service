@@ -193,12 +193,9 @@ describe('Auth (e2e)', () => {
       await http().get('/auth/me').set(bearer(expiring)).expect(401);
     });
 
-    it('treats an invalid token as a guest on public routes', async () => {
-      await http().get('/products').set(bearer('a.b.c')).expect(200);
-    });
-
-    it('still rejects an invalid token on protected routes', async () => {
-      await http().get('/auth/me').set(bearer('a.b.c')).expect(401);
+    it('never downgrades an invalid token to guest on public routes', async () => {
+      await http().get('/products').expect(200);
+      await http().get('/products').set(bearer('a.b.c')).expect(401);
     });
   });
 
