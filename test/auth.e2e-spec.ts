@@ -258,6 +258,19 @@ describe('Auth (e2e)', () => {
         .expect(200);
     });
 
+    it('refreshes even when the request carries an expired access token', async () => {
+      const { user, refreshToken } = await register();
+      const expired = await app
+        .get(JwtService)
+        .signAsync({ sub: user.id, sid: 'sesion-vencida' }, { expiresIn: -60 });
+
+      await http()
+        .post('/auth/refresh')
+        .set(bearer(expired))
+        .send({ refreshToken })
+        .expect(200);
+    });
+
     it('rejects an unknown refresh token', async () => {
       await http()
         .post('/auth/refresh')
