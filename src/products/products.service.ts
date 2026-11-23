@@ -39,6 +39,7 @@ export class ProductsService {
         specifications: dto.specifications,
         price: dto.price,
         categoryId: dto.categoryId,
+        imageUrl: dto.imageUrl
       },
       include: { category: true },
     });
